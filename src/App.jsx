@@ -1,14 +1,112 @@
 // src/App.jsx
-import React, { useEffect } from 'react';
+import React from 'react';
 import { toPng } from 'html-to-image';
 
-// Variation 1: Modern Geometric
-const GeometricFeatureImage = () => {
-  const queryParams = useQueryParams();
-  const title = queryParams.get('title') || 'Blog Post Title';
-  const subtitle = queryParams.get('subtitle') || 'Subtitle goes here';
-  const category = queryParams.get('category') || 'FEATURED';
+const ImageEditor = () => {
+  const [title, setTitle] = React.useState('Blog Post Title');
+  const [subtitle, setSubtitle] = React.useState('Subtitle goes here');
+  const [category, setCategory] = React.useState('FEATURED');
+  const [theme, setTheme] = React.useState('cyber'); // 'cyber', 'geometric', or 'tech'
 
+  const handleDownload = async () => {
+    try {
+      const element = document.getElementById('feature-image');
+      if (element) {
+        const dataUrl = await toPng(element, {
+          width: 800,
+          height: 400,
+          style: {
+            transform: 'scale(1)',
+            transformOrigin: 'top left',
+          },
+        });
+
+        const link = document.createElement('a');
+        link.download = `${title
+          .toLowerCase()
+          .replace(/\s+/g, '-')}-featured.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (error) {
+      console.error('Error capturing image:', error);
+    }
+  };
+
+  const ImageComponent = {
+    cyber: CyberpunkFeatureImage,
+    geometric: GeometricFeatureImage,
+    tech: FeatureImage,
+  }[theme];
+
+  return (
+    <div className='min-h-screen p-8 bg-gray-900'>
+      {/* Editor Controls */}
+      <div className='max-w-[800px] mx-auto space-y-6 bg-gray-800 p-6 rounded-lg'>
+        <div className='space-y-4'>
+          <label className='block'>
+            <span className='block mb-1 text-white'>Theme</span>
+            <select
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className='w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500'>
+              <option value='cyber'>Cyberpunk</option>
+              <option value='geometric'>Geometric</option>
+              <option value='tech'>Tech</option>
+            </select>
+          </label>
+
+          <label className='block'>
+            <span className='block mb-1 text-white'>Title</span>
+            <input
+              type='text'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className='w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              placeholder='Enter title'
+            />
+          </label>
+
+          <label className='block'>
+            <span className='block mb-1 text-white'>Subtitle</span>
+            <input
+              type='text'
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              className='w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              placeholder='Enter subtitle'
+            />
+          </label>
+
+          <label className='block'>
+            <span className='block mb-1 text-white'>Category</span>
+            <input
+              type='text'
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className='w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500'
+              placeholder='Enter category'
+            />
+          </label>
+        </div>
+
+        <button
+          onClick={handleDownload}
+          className='w-full px-4 py-2 text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700'>
+          Download Image
+        </button>
+      </div>
+
+      {/* Preview */}
+      <div className='preview-container'>
+        <ImageComponent title={title} subtitle={subtitle} category={category} />
+      </div>
+    </div>
+  );
+};
+
+// Variation 1: Modern Geometric
+const GeometricFeatureImage = ({ title, subtitle, category }) => {
   const GeometricBackground = () => (
     <div className='absolute inset-0'>
       <div
@@ -68,7 +166,7 @@ const GeometricFeatureImage = () => {
   );
 
   return (
-    <div className='flex items-center justify-center w-screen h-screen p-4 bg-gray-900'>
+    <div className='flex items-center justify-center p-4 bg-gray-900'>
       <div
         id='feature-image'
         className='w-[800px] h-[400px] relative overflow-hidden bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900 shadow-2xl rounded-lg'>
@@ -100,12 +198,7 @@ const GeometricFeatureImage = () => {
 };
 
 // Variation 2: Cyberpunk Style
-const CyberpunkFeatureImage = () => {
-  const queryParams = useQueryParams();
-  const title = queryParams.get('title') || 'Blog Post Title';
-  const subtitle = queryParams.get('subtitle') || 'Subtitle goes here';
-  const category = queryParams.get('category') || 'FEATURED';
-
+const CyberpunkFeatureImage = ({ title, subtitle, category }) => {
   const CyberBackground = () => (
     <div className='absolute inset-0'>
       <div
@@ -190,7 +283,7 @@ const CyberpunkFeatureImage = () => {
   );
 
   return (
-    <div className='flex items-center justify-center w-screen h-screen p-4 bg-gray-900'>
+    <div className='flex items-center justify-center p-4 bg-gray-900'>
       <div
         id='feature-image'
         className='w-[800px] h-[400px] relative overflow-hidden bg-gradient-to-br from-slate-950 via-gray-900 to-slate-900 shadow-2xl rounded-none'>
@@ -227,113 +320,72 @@ const CyberpunkFeatureImage = () => {
   );
 };
 
-const useQueryParams = () => {
-  return new URLSearchParams(window.location.search);
-};
+const FeatureImage = ({ title, subtitle, category }) => {
+  const BackgroundGradients = () => {
+    return (
+      <div className='absolute inset-0'>
+        <div
+          className={`absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full blur-3xl bg-blue-500/20`}
+        />
+        <div
+          className={`absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] rounded-full blur-3xl bg-purple-500/20`}
+        />
+        <div
+          className={`absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full blur-3xl bg-cyan-500/20`}
+        />
+      </div>
+    );
+  };
 
-const BackgroundGradients = () => {
-  return (
-    <div className='absolute inset-0'>
-      <div
-        className={`absolute top-[-200px] left-[-200px] w-[600px] h-[600px] rounded-full blur-3xl bg-blue-500/20`}
+  const TechGrid = () => (
+    <svg
+      className='absolute inset-0 w-full h-full'
+      xmlns='http://www.w3.org/2000/svg'>
+      <defs>
+        <pattern
+          id='smallDot'
+          width='20'
+          height='20'
+          patternUnits='userSpaceOnUse'>
+          <circle cx='2' cy='2' r='1' fill='rgba(255,255,255,0.09)' />
+        </pattern>
+
+        <linearGradient id='lineGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
+          <stop offset='0%' stopColor='rgba(255,255,255,0)' />
+          <stop offset='50%' stopColor='rgba(255,255,255,0.2)' />
+          <stop offset='100%' stopColor='rgba(255,255,255,0.05)' />
+        </linearGradient>
+      </defs>
+
+      <rect width='100%' height='100%' fill='url(#smallDot)' />
+
+      <path
+        d='M 300,200 Q 400,180 500,200 T 700,200'
+        stroke='url(#lineGradient)'
+        strokeWidth='1'
+        fill='none'
+        strokeDasharray='5 5'
       />
-      <div
-        className={`absolute bottom-[-200px] right-[-200px] w-[600px] h-[600px] rounded-full blur-3xl bg-purple-500/20`}
+
+      <path
+        d='M 250,150 Q 400,120 550,150 T 750,150'
+        stroke='url(#lineGradient)'
+        strokeWidth='1'
+        fill='none'
+        strokeDasharray='5 5'
       />
-      <div
-        className={`absolute top-[-100px] right-[-100px] w-[400px] h-[400px] rounded-full blur-3xl bg-cyan-500/20`}
+
+      <path
+        d='M 200,250 Q 400,220 600,250 T 800,250'
+        stroke='url(#lineGradient)'
+        strokeWidth='1'
+        fill='none'
+        strokeDasharray='5 5'
       />
-    </div>
+    </svg>
   );
-};
-
-const TechGrid = () => (
-  <svg
-    className='absolute inset-0 w-full h-full'
-    xmlns='http://www.w3.org/2000/svg'>
-    <defs>
-      <pattern
-        id='smallDot'
-        width='20'
-        height='20'
-        patternUnits='userSpaceOnUse'>
-        <circle cx='2' cy='2' r='1' fill='rgba(255,255,255,0.09)' />
-      </pattern>
-
-      <linearGradient id='lineGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
-        <stop offset='0%' stopColor='rgba(255,255,255,0)' />
-        <stop offset='50%' stopColor='rgba(255,255,255,0.2)' />
-        <stop offset='100%' stopColor='rgba(255,255,255,0.05)' />
-      </linearGradient>
-    </defs>
-
-    <rect width='100%' height='100%' fill='url(#smallDot)' />
-
-    <path
-      d='M 300,200 Q 400,180 500,200 T 700,200'
-      stroke='url(#lineGradient)'
-      strokeWidth='1'
-      fill='none'
-      strokeDasharray='5 5'
-    />
-
-    <path
-      d='M 250,150 Q 400,120 550,150 T 750,150'
-      stroke='url(#lineGradient)'
-      strokeWidth='1'
-      fill='none'
-      strokeDasharray='5 5'
-    />
-
-    <path
-      d='M 200,250 Q 400,220 600,250 T 800,250'
-      stroke='url(#lineGradient)'
-      strokeWidth='1'
-      fill='none'
-      strokeDasharray='5 5'
-    />
-  </svg>
-);
-
-const FeatureImage = () => {
-  const queryParams = useQueryParams();
-  const title = queryParams.get('title') || 'Blog Post Title';
-  const subtitle = queryParams.get('subtitle') || 'Subtitle goes here';
-  const category = queryParams.get('category') || 'FEATURED';
-
-  useEffect(() => {
-    const captureImage = async () => {
-      try {
-        const element = document.getElementById('feature-image');
-        if (element) {
-          const dataUrl = await toPng(element, {
-            width: 800,
-            height: 400,
-            style: {
-              transform: 'scale(1)',
-              transformOrigin: 'top left',
-            },
-          });
-
-          const link = document.createElement('a');
-          link.download = `${title
-            .toLowerCase()
-            .replace(/\s+/g, '-')}-featured.png`;
-          link.href = dataUrl;
-          link.click();
-        }
-      } catch (error) {
-        console.error('Error capturing image:', error);
-      }
-    };
-
-    if (queryParams.get('download') === 'true') {
-      captureImage();
-    }
-  }, [queryParams, title]);
-
   return (
-    <div className='flex items-center justify-center w-screen h-screen p-4 bg-gray-900'>
+    <div className='flex items-center justify-center p-4 bg-gray-900'>
       <div
         id='feature-image'
         className='w-[800px] h-[400px] relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-2xl rounded-lg'>
@@ -368,4 +420,4 @@ const FeatureImage = () => {
   );
 };
 
-export default CyberpunkFeatureImage;
+export default ImageEditor;
