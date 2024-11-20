@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: 'Geist';
+  src: url('./assets/GeistVF.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
